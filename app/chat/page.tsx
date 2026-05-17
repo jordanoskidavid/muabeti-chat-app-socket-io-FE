@@ -43,7 +43,7 @@ export default function ChatPage() {
     const [newUserId, setNewUserId] = useState('');
     const socketRef = useRef<Socket | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-
+    const [searchResults, setSearchResults] = useState<User[]>([]);
     useEffect(() => {
         const t = localStorage.getItem('token');
         const u = localStorage.getItem('user');
@@ -148,20 +148,47 @@ export default function ChatPage() {
                 </div>
 
                 {/* New conversation */}
-                <div className="p-3 border-b flex gap-2">
+                <div className="p-3 border-b relative">
                     <input
-                        type="number"
-                        placeholder="User ID"
+                        type="text"
+                        placeholder="Search by email..."
                         value={newUserId}
-                        onChange={(e) => setNewUserId(e.target.value)}
+                        onChange={async (e) => {
+                            setNewUserId(e.target.value);
+                            if (e.target.value.trim().length < 2) {
+                                setSearchResults([]);
+                                return;
+                            }
+                            const results = await api.searchUsers(tokenRef.current, e.target.value);
+                            setSearchResults(results);
+                        }}
                         className="border p-1 rounded w-full text-sm"
                     />
-                    <button
-                        onClick={startConversation}
-                        className="bg-blue-500 text-white px-3 rounded text-sm hover:bg-blue-600"
-                    >
-                        Chat
-                    </button>
+                    {searchResults.length > 0 && (
+                        <div className="absolute left-3 right-3 bg-white border rounded shadow z-10">
+                            {searchResults.map((user) => (
+                                <div
+                                    key={user.id}
+                                    onClick={async () => {
+                                        const conv = await api.createDirectConversation(tokenRef.current, user.id);
+                                        if (conv.id) {
+                                            setConversations((prev) => {
+                                                const exists = prev.find((c) => c.id === conv.id);
+                                                if (exists) return prev;
+                                                return [conv, ...prev];
+                                            });
+                                            selectConversation(conv);
+                                        }
+                                        setNewUserId('');
+                                        setSearchResults([]);
+                                    }}
+                                    className="p-2 text-sm hover:bg-gray-100 cursor-pointer"
+                                >
+                                    {user.email}
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* Conversations list */}

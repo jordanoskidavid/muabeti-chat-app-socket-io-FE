@@ -9,7 +9,12 @@ export const api = {
         });
         return res.json();
     },
-
+    async searchUsers(token: string, email: string) {
+        const res = await fetch(`${BASE_URL}/users/search?email=${email}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return res.json();
+    },
     async register(email: string, password: string) {
         const res = await fetch(`${BASE_URL}/auth/register`, {
             method: 'POST',
