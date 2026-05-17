@@ -38,7 +38,17 @@ export const api = {
         });
         return res.json();
     },
-
+    async createGroupConversation(token: string, name: string, userIds: number[]) {
+        const res = await fetch(`${BASE_URL}/conversations/group`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ name, userIds }),
+        });
+        return res.json();
+    },
     async createDirectConversation(token: string, userId: number) {
         const res = await fetch(`${BASE_URL}/conversations/direct`, {
             method: 'POST',
