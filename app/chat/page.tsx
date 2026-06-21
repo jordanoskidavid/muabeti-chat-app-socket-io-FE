@@ -33,11 +33,7 @@ interface Conversation {
 export default function ChatPage() {
     const router = useRouter();
     const tokenRef = useRef<string>('');
-    const [currentUser] = useState<User | null>(() => {
-        if (typeof window === 'undefined') return null;
-        const u = localStorage.getItem('user');
-        return u ? JSON.parse(u) : null;
-    });
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
@@ -64,7 +60,9 @@ export default function ChatPage() {
         }
 
         tokenRef.current = t;
-        const currentUserId = JSON.parse(u).id;
+        const parsedUser = JSON.parse(u);
+        setCurrentUser(parsedUser);          // ← add this line
+        const currentUserId = parsedUser.id;
 
         const socket = io('http://localhost:3000', {
             auth: { token: t },
